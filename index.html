@@ -1,0 +1,123 @@
+﻿
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>LTC Bus Stops</title>
+    <style>
+
+        #stops{
+            margin:5px;
+            font-size:30px;
+            font-weight:bold;
+        }
+
+        #xsltOutputContainer{
+           padding:5px;
+        }
+        h1{
+            font-size:40px;
+
+        }
+        #routeNum{
+            width:300px;
+            height:40px;
+			font-size:30px;
+        }
+        #btnSubmit{
+            height:40px;
+            width:200px;
+			font-size:30px;
+			font-weight:bold;
+        }
+		tr{
+		height:40px;
+		font-size:25px;
+		}
+
+    </style>
+
+    <script type="text/javascript">
+
+        function loadXMLDoc(filename) {
+            if (window.ActiveXObject) {
+                xhttp = new ActiveXObject("Msxml2.XMLHTTP");
+            }
+            else {
+                xhttp = new XMLHttpRequest();
+            }
+            xhttp.open("GET", filename, false);
+
+            try {
+                xhttp.responseType = "msxml-document"
+            }
+            catch (err) { }
+            xhttp.send("");
+            return xhttp.responseXML;
+        }
+
+        function RenderXSLT() {
+
+            var routeNum = document.getElementById("routeNum").value;
+            if (routeNum === "") {
+
+                document.getElementById("stops").innerHTML = "ALL LTC Stops";
+
+            }
+
+                xml = loadXMLDoc("ltcstops.xml");
+                xslt = loadXMLDoc("ltcstops.xslt");
+
+                if (window.ActiveXObject || xhttp.responseType == "msxml-document") {
+                    var template = new ActiveXObject("Msxml2.XslTemplate.6.0");
+                    template.stylesheet = xslt;
+
+
+                    var proc = template.createProcessor();
+                    proc.input = xml;
+
+                    proc.addParameter("route", routeNum);
+
+
+                    proc.transform();
+                    document.getElementById("xsltOutputContainer").innerHTML = proc.output;
+
+                }//end if
+                else if (typeof XSLTProcessor !== 'undefined') {
+
+
+                    var resultDocument;
+                    var xsltProcessor;
+
+
+
+
+                    xsltProcessor = new XSLTProcessor();
+                    xsltProcessor.importStylesheet(xslt);
+
+
+                    xsltProcessor.setParameter(null, "route", routeNum);
+                    resultDocument = xsltProcessor.transformToFragment(xml, document);
+                    document.getElementById("xsltOutputContainer").appendChild(resultDocument);
+
+                } //end else if
+
+        
+                }//RenderXSLT
+                
+        
+
+    </script>
+
+
+</head>
+<body>
+    <h1>Enter an LTC route number (or leave empty) and click 'Update'</h1>
+    <input type="text" id="routeNum" />
+    <input type="submit" id="btnSubmit" value="Update" onclick="RenderXSLT()" />
+
+    <div id="stops"></div>
+    <div id="xsltOutputContainer"></div>
+
+
+
+</body>
+</html>
